@@ -22,11 +22,18 @@ pres <- setExtent(pres, extent(temp))
 ## pres is right, negated for the Z on the qm
 qm <- quadmesh::quadmesh(pres, z = 0-pres) ## need 0- because bug in raster
 
+## we need a quadmesh, but we can put many variables "on" it
+qm$material <- list(col = viridis::viridis(100)[scales::rescale(extract(temp, t(qm$vb[1:2, ]), method = "bilinear"), c(1, 100))][qm$ib])
+
 ## no return from this point, if needs to be redone recreate qm
 qm$vb[1, ] <- extract(setValues(temp, rep(lon, nrow(temp))), t(qm$vb[1:2, ]),
                       method = "bilinear")
 qm$vb[2, ] <- extract(setValues(temp, rep(lat, nrow(temp))), t(qm$vb[1:2, ]),
                       method = "bilinear")
 
-## we need a quadmesh, but we can put many variables "on" it
 
+bad <- qm$vb[1, ] < 100
+qm$vb[, bad] <- NA
+library(rgl)
+shade3d(qm)
+aspect3d(1, 1, 0.1)
